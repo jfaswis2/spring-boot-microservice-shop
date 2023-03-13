@@ -1,10 +1,8 @@
 package com.example.productservice;
 
 import com.example.productservice.dto.ProductRequest;
-import com.example.productservice.dto.ProductResponse;
 import com.example.productservice.repository.ProductRepository;
 import com.example.productservice.service.ProductService;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -22,8 +20,6 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -51,9 +47,10 @@ class ProductServiceApplicationTests {
 
 	@Test
 	void shouldCreateProduct() throws Exception {
-		ProductRequest productRequest = getProductRequest();
-		String productRequestString = objectMapper.writeValueAsString(productRequest);
 
+		ProductRequest productRequest = getProductRequest();
+
+		String productRequestString = objectMapper.writeValueAsString(productRequest);
 
 		mockMvc.perform(MockMvcRequestBuilders.post("/api/product")
 				.contentType(MediaType.APPLICATION_JSON)
@@ -67,27 +64,21 @@ class ProductServiceApplicationTests {
 
 		ProductRequest productRequest = getProductRequest();
 
-		List<ProductRequest> productRequests = new ArrayList<>();
-		productRequests.add(productRequest);
-
+		productService.createProduct(productRequest);
 		productService.createProduct(productRequest);
 
 		mockMvc.perform(MockMvcRequestBuilders.get("/api/product")
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.status().isOk())
-				.andExpect(result -> {
-					String json = result.getResponse().getContentAsString();
-					List<ProductResponse> productResponseList = objectMapper.readValue(json, new TypeReference<List<ProductResponse>>() {});
-					Assertions.assertEquals(productRequests.get(0).getName(), productResponseList.get(0).getName(),"Es correcto");
-				});
+				.andExpect(MockMvcResultMatchers.jsonPath("$[0].name").value("iPhone 13"))
+				.andExpect(MockMvcResultMatchers.jsonPath("$[1].description").value("IPhone 13"));
 	}
 
-	private ProductRequest getProductRequest() {
+	private static ProductRequest getProductRequest() {
 		return ProductRequest.builder()
 				.name("iPhone 13")
 				.description("IPhone 13")
 				.price(BigDecimal.valueOf(1200))
 				.build();
 	}
-
 }
