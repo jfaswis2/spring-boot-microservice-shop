@@ -21,7 +21,7 @@ import java.util.UUID;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final WebClient webClient;
+    private final WebClient.Builder webClientBuilder;
 
     public void placeOrder(OrderRequest orderRequest) {
         Order order = new Order();
@@ -38,8 +38,8 @@ public class OrderService {
                 .toList();                      //la lista de OrderLineItems
 
         //Se llama al Inventory-Service, y se hace la orden si hay stock
-        InventoryReponse[] inventoryReponsesArray = webClient.get()
-                .uri("http://localhost:8082/api/inventory",
+        InventoryReponse[] inventoryReponsesArray = webClientBuilder.build().get()
+                .uri("http://inventory-service/api/inventory",
                         uriBuilder -> uriBuilder.queryParam("skuCode", skuCodes).build())
                 .retrieve()
                 .bodyToMono(InventoryReponse[].class)
